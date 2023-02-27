@@ -1,7 +1,21 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+@inject IJSRuntime JSRuntime
+@inject HttpClient Http
 
-<h1>Hello, world!</h1>
+<h1>Display Google Map</h1>
 
-Welcome to your new app.
+<div id="map1" style="height:500px;width:100%;border-radius: 10px" />
+
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var apikey = Http.GetFromJsonAsync<string>("https://localhost:7281//apikey");
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("initialize1", apikey);
+        }
+    }
+
+}
