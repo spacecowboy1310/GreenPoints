@@ -5,9 +5,9 @@ VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenPoints", "GreenPoint\GreenPoints.csproj", "{5C97E7E5-0590-4B02-AD99-7F77E2CE9C2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenPointsAPI", "GreenPointsAPI\GreenPointsAPI.csproj", "{3DB6BA59-27D9-4413-A451-2D9D26672D95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenPointsLibrary", "GreenPointsLibrary\GreenPointsLibrary.csproj", "{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenPointsLibrary", "GreenPointsLibrary\GreenPointsLibrary.csproj", "{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenPointsAPI", "GreenPointsAPI\GreenPointsAPI.csproj", "{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +19,14 @@ Global
 		{5C97E7E5-0590-4B02-AD99-7F77E2CE9C2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C97E7E5-0590-4B02-AD99-7F77E2CE9C2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C97E7E5-0590-4B02-AD99-7F77E2CE9C2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3DB6BA59-27D9-4413-A451-2D9D26672D95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3DB6BA59-27D9-4413-A451-2D9D26672D95}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3DB6BA59-27D9-4413-A451-2D9D26672D95}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3DB6BA59-27D9-4413-A451-2D9D26672D95}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

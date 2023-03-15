@@ -1,46 +1,87 @@
+using GreenPointsAPI.Data;
+using GreenPointsAPI.Properties;
+using GreenPointsAPI.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// use the secret apikey from the usersecrets file
-var apiKey = builder.Configuration["apikey"];
-
 // Add services to the container.
-var app = builder.Build();
 
-// get the apikey
-app.MapGet("/apikey", () => apiKey);
+// Database context
+builder.Services.AddDbContext<GreenPointsContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Authentication and Authorization services
+builder.Services.AddSingleton<TokenService>();
+
+byte[] secretKey = ApiSettings.GenerateSecretByte();
+
+builder.Services.AddAuthentication(config =>
+{
+    config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(config =>
+{
+    config.RequireHttpsMetadata = false;
+    config.SaveToken = true;
+    config.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+        ValidateIssuer = false,
+        ValidateAudience = false
+    };
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    // This code could be used to get all roles from the database
+    //GreenPointsContext context = builder.Services.BuildServiceProvider().GetService<GreenPointsContext>();
+    //foreach (string role in context.Roles.Select(r => r.Name).ToList())
+    //{
+    //    options.AddPolicy(role, policy => policy.RequireRole(role));
+    //}
+    options.AddPolicy("manager", policy => policy.RequireRole("manager"));
+    options.AddPolicy("operator", policy => policy.RequireRole("operator"));
+});
+
+var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Endpoints
 
-app.MapGet("/weatherforecast", () =>
+app.MapPost("/login", (User userModel, GreenPointsContext context) =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    User? user = context.Users.Include(u => u.Role).FirstOrDefault(user => user.Username == userModel.Username && user.Password == userModel.Password);
+
+    if (user is null)
+        return Results.NotFound(new { message = "Invalid username or password" });
+
+    string token = TokenService.GenerateToken(user);
+
+    user.Password = string.Empty;
+
+    return Results.Ok(new { user, token });
 });
 
-app.UseCors(x => x
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+app.MapGet("/operator", (ClaimsPrincipal user) =>
+{
+    Results.Ok(new { message = $"Authenticated as {user.Identity?.Name ?? "Anonymous"}" });
+}).RequireAuthorization("Operator");
+
+app.MapGet("/manager", (ClaimsPrincipal user) =>
+{
+    Results.Ok(new { message = $"Authenticated as {user.Identity?.Name ?? "Anonymous"}" });
+}).RequireAuthorization("Manager");
+
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-
