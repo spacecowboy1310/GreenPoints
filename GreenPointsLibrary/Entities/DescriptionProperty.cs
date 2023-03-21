@@ -8,3 +8,15 @@ public class DescriptionProperty
     [NotNull]
     public string Description { get; set; }
 }
+
+public class EditDescriptionProperty
+{
+    public int Id { get; set; }
+    [NotNull]
+    public string Name { get; set; }
+    [NotNull]
+    public string Description { get; set; }
+    [NotNull]
+    public User Collaborator { get; set; }
+    public int EditGreenPointId { get; set; }
+}
