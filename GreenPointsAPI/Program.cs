@@ -1,6 +1,7 @@
 using GreenPointsAPI.Data;
 using GreenPointsAPI.Properties;
 using GreenPointsAPI.Services;
+using GreenPointsAPI.Services.MailService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -13,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Database context
 builder.Services.AddDbContext<GreenPointsContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Mail service
+builder.Services.AddScoped<IMailService, MailService>();
 
 // Authentication and Authorization services
 builder.Services.AddSingleton<TokenService>();
@@ -44,8 +48,9 @@ builder.Services.AddAuthorization(options =>
     //{
     //    options.AddPolicy(role, policy => policy.RequireRole(role));
     //}
-    options.AddPolicy("manager", policy => policy.RequireRole("manager"));
-    options.AddPolicy("operator", policy => policy.RequireRole("operator"));
+    options.AddPolicy(Roles.Collaborator, policy => policy.RequireRole(Roles.Collaborator));
+    options.AddPolicy(Roles.Editor, policy => policy.RequireRole(Roles.Editor));
+    options.AddPolicy(Roles.Administrator, policy => policy.RequireRole(Roles.Administrator));
 });
 
 var app = builder.Build();
@@ -59,7 +64,7 @@ app.UseHttpsRedirection();
 
 // Endpoints
 
-app.MapPost("/login", (User userModel, GreenPointsContext context) =>
+app.MapPost("/login", (TemporalUser userModel, GreenPointsContext context) =>
 {
     User? user = context.Users.Include(u => u.Role).FirstOrDefault(user => user.Username == userModel.Username && user.Password == userModel.Password);
 
@@ -73,15 +78,68 @@ app.MapPost("/login", (User userModel, GreenPointsContext context) =>
     return Results.Ok(new { user, token });
 });
 
-app.MapGet("/operator", (ClaimsPrincipal user) =>
+app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
+{
+    User? user = context.Users.FirstOrDefault(user => user.Username == userModel.Username);
+
+    if (user is not null)
+        return Results.Conflict("Username already exists");
+
+    user = context.Users.FirstOrDefault(user => user.Mail == userModel.Mail);
+
+    if (user is not null)
+        return Results.Conflict("E-mail already registered");
+
+    TemporalUser? temporalUser = context.TemporalUsers.FirstOrDefault(user => user.Mail == userModel.Mail);
+
+    if (temporalUser is not null)
+    {
+        userModel.ID = temporalUser.ID;
+        context.TemporalUsers.Entry(userModel).State = EntityState.Modified;
+    } else
+    {
+        userModel.ID = Guid.NewGuid();
+        context.TemporalUsers.Add(userModel);
+    }
+    context.SaveChanges();
+
+    string subject = "GreenPoints - Confirm your account";
+    string body = $@"
+        <h1>GreenPoints</h1>
+        <p>Thank you for registering in GreenPoints. To confirm your account, please click on the following link:</p>
+        <a href=""https://localhost:7204/confirm/{userModel.ID}"">Confirm account</a>
+    ";
+    mailService.SendMail(userModel.Mail, subject, body);
+
+    return Results.Ok("User registered");
+});
+
+app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
+{
+    TemporalUser? temporalUser = context.TemporalUsers.Find(id);
+
+    if (temporalUser is null)
+        return Results.NotFound("User not found");
+
+    Role? role = context.Roles.FirstOrDefault(role => role.Name == Roles.Collaborator);
+    User user = new()
+    {
+        Username = temporalUser.Username,
+        Password = temporalUser.Password,
+        Mail = temporalUser.Mail,
+        Role = role
+    };
+
+    context.Users.Add(user);
+    context.TemporalUsers.Remove(temporalUser);
+    context.SaveChanges();
+
+    return Results.Ok("User confirmed");
+});
+
+app.MapGet("/collaborator", (ClaimsPrincipal user) =>
 {
     Results.Ok(new { message = $"Authenticated as {user.Identity?.Name ?? "Anonymous"}" });
-}).RequireAuthorization("Operator");
-
-app.MapGet("/manager", (ClaimsPrincipal user) =>
-{
-    Results.Ok(new { message = $"Authenticated as {user.Identity?.Name ?? "Anonymous"}" });
-}).RequireAuthorization("Manager");
-
+}).RequireAuthorization(Roles.Collaborator);
 
 app.Run();

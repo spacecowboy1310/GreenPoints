@@ -30,3 +30,10 @@ public class Role
     [NotNull]
     public string Name { get; set; }
 }
+
+public static class Roles
+{
+    public static readonly string Collaborator = "Collaborator";
+    public static readonly string Editor = "Editor";
+    public static readonly string Administrator = "Administrator";
+}
