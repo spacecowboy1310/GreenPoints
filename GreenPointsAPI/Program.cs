@@ -95,9 +95,10 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
         return Results.Conflict("E-mail already registered");
 
     TemporalUser? temporalUser = context.TemporalUsers.FirstOrDefault(user => user.Mail == userModel.Mail);
-
+    string id;
     if (temporalUser is not null)
     {
+        id = temporalUser.ID.ToString();
         temporalUser.Username = userModel.Username;
         temporalUser.Password = userModel.Password;
         temporalUser.Mail = userModel.Mail;
@@ -106,6 +107,7 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
     else
     {
         userModel.ID = Guid.NewGuid();
+        id = userModel.ID.ToString();
         context.TemporalUsers.Add(userModel);
     }
     context.SaveChanges();
@@ -114,7 +116,7 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
     string body = $@"
         <h1>GreenPoints</h1>
         <p>Thank you for registering in GreenPoints. To confirm your account, please click on the following link:</p>
-        <a href=""https://localhost:7204/confirm/{userModel.ID}"">Confirm account</a>
+        <a href=""https://localhost:7204/confirm/{id}"">Confirm account</a>
     ";
     mailService.SendMail(userModel.Mail, subject, body);
 
