@@ -13,13 +13,15 @@ internal class TokenService
 
         byte[] key = ApiSettings.GenerateSecretByte();
 
+        List<Claim> claims = new (){ new Claim(ClaimTypes.Name, user.Username.ToString()) };
+        foreach(Role role in user.Roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role.Name.ToString()));
+        }
+
         SecurityTokenDescriptor tokenDescriptor = new()
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.Name, user.Username.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.Name.ToString()),
-            }),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddMinutes(30),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };

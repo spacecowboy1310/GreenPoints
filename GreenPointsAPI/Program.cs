@@ -53,6 +53,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy(Roles.Administrator, policy => policy.RequireRole(Roles.Administrator));
 });
 
+// Service
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -64,9 +66,9 @@ app.UseHttpsRedirection();
 
 // Endpoints
 
-app.MapPost("/login", (TemporalUser userModel, GreenPointsContext context) =>
+app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 {
-    User? user = context.Users.Include(u => u.Role).FirstOrDefault(user => user.Username == userModel.Username && user.Password == userModel.Password);
+    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Username == userModel.Username && user.Password == userModel.Password);
 
     if (user is null)
         return Results.NotFound(new { message = "Invalid username or password" });
@@ -75,7 +77,9 @@ app.MapPost("/login", (TemporalUser userModel, GreenPointsContext context) =>
 
     user.Password = string.Empty;
 
-    return Results.Ok(new { user, token });
+    UserDTO dto = user.toDTO();
+
+    return Results.Ok(new { dto, token });
 });
 
 app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
@@ -94,9 +98,12 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
 
     if (temporalUser is not null)
     {
-        userModel.ID = temporalUser.ID;
-        context.TemporalUsers.Entry(userModel).State = EntityState.Modified;
-    } else
+        temporalUser.Username = userModel.Username;
+        temporalUser.Password = userModel.Password;
+        temporalUser.Mail = userModel.Mail;
+        context.TemporalUsers.Entry(temporalUser).State = EntityState.Modified;
+    }
+    else
     {
         userModel.ID = Guid.NewGuid();
         context.TemporalUsers.Add(userModel);
@@ -127,7 +134,7 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
         Username = temporalUser.Username,
         Password = temporalUser.Password,
         Mail = temporalUser.Mail,
-        Role = role
+        Roles = new() { role }
     };
 
     context.Users.Add(user);
