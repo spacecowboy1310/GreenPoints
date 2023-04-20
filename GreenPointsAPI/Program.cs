@@ -3,6 +3,7 @@ using GreenPointsAPI.Properties;
 using GreenPointsAPI.Services;
 using GreenPointsAPI.Services.MailService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
@@ -68,10 +69,22 @@ app.UseHttpsRedirection();
 
 app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 {
-    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Username == userModel.Username && user.Password == userModel.Password);
+    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Username == userModel.Username);
 
     if (user is null)
-        return Results.NotFound(new { message = "Invalid username or password" });
+        return Results.NotFound(new { message = "Username not found" });
+
+    PasswordHasher<User> hasher = new();
+    switch (hasher.VerifyHashedPassword(user, user.Password, userModel.Password))
+    {
+        case PasswordVerificationResult.Failed:
+            return Results.BadRequest(new { message = "Incorrect password" });
+        case PasswordVerificationResult.SuccessRehashNeeded:
+            user.Password = hasher.HashPassword(user, user.Password);
+            context.Users.Entry(user).State = EntityState.Modified;
+            context.SaveChanges();
+            break;
+    }
 
     string token = TokenService.GenerateToken(user);
 
@@ -96,18 +109,19 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
 
     TemporalUser? temporalUser = context.TemporalUsers.FirstOrDefault(user => user.Mail == userModel.Mail);
     string id;
+    PasswordHasher<TemporalUser> hasher = new();
     if (temporalUser is not null)
     {
         id = temporalUser.ID.ToString();
         temporalUser.Username = userModel.Username;
-        temporalUser.Password = userModel.Password;
-        temporalUser.Mail = userModel.Mail;
+        temporalUser.Password = hasher.HashPassword(userModel, userModel.Password);
         context.TemporalUsers.Entry(temporalUser).State = EntityState.Modified;
     }
     else
     {
         userModel.ID = Guid.NewGuid();
         id = userModel.ID.ToString();
+        userModel.Password = hasher.HashPassword(userModel, userModel.Password);
         context.TemporalUsers.Add(userModel);
     }
     context.SaveChanges();
