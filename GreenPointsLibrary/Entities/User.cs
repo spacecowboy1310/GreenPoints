@@ -21,6 +21,7 @@ public class User
         }
         return new()
         {
+            Id = Id,
             Username = Username,
             Password = Password,
             Mail = Mail,

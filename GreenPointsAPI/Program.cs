@@ -160,9 +160,17 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
     return Results.Ok("User confirmed");
 });
 
-app.MapGet("/collaborator", (ClaimsPrincipal user) =>
+app.MapPost("/greenpoints", (GreenPointsContext context, EditGreenPoint greenPoint) =>
 {
-    Results.Ok(new { message = $"Authenticated as {user.Identity?.Name ?? "Anonymous"}" });
+    User? collaborator = context.Users.Find(greenPoint.Collaborator.Id);
+    
+    if (collaborator is null)
+        return Results.NotFound("User not found");
+    
+    greenPoint.setCollaborator(collaborator);
+    context.EditGreenPoints.Add(greenPoint);
+    context.SaveChanges();
+    return Results.Ok("GreenPoint accepted");
 }).RequireAuthorization(Roles.Collaborator);
 
 app.Run();
