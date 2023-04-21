@@ -160,6 +160,23 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
     return Results.Ok("User confirmed");
 });
 
+app.MapPost("/changeRole", (GreenPointsContext context, int userId, List<string> newRoles) => {
+    User? user = context.Users.Find(userId);
+    if (user is null)
+        return Results.NotFound("User not found");
+    List<Role> roles = new();
+    foreach (string role in newRoles)
+    {
+        Role? temp = context.Roles.FirstOrDefault(r => r.Name == role);
+        if (temp is not null)
+            roles.Add(temp);
+    }
+    user.Roles = roles;
+    context.Users.Entry(user).State = EntityState.Modified;
+    context.SaveChanges();
+    return Results.Ok("User roles updated");
+}).RequireAuthorization(Roles.Administrator);
+
 app.MapPost("/greenpoints", (GreenPointsContext context, EditGreenPoint greenPoint) =>
 {
     User? collaborator = context.Users.Find(greenPoint.Collaborator.Id);
