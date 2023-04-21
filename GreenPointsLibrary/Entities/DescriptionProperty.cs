@@ -19,4 +19,12 @@ public class EditDescriptionProperty
     [NotNull]
     public User Collaborator { get; set; }
     public int EditGreenPointId { get; set; }
+    public DescriptionProperty ToDescriptionProperty()
+    {
+        return new()
+        {
+            Name = Name,
+            Description = Description
+        };
+    }
 }

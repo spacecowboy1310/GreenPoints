@@ -12,7 +12,7 @@ public class User
     public string Mail { get; set; }
     public List<Role> Roles { get; set; }
     public List<GreenPoint> Collaborations { get; set; }
-    public UserDTO toDTO()
+    public UserDTO ToDTO()
     {
         List<string> roles = new();
         foreach (Role role in Roles)

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,7 +89,7 @@ app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 
     user.Password = string.Empty;
 
-    UserDTO dto = user.toDTO();
+    UserDTO dto = user.ToDTO();
 
     return Results.Ok(new { dto, token });
 });
@@ -178,17 +177,44 @@ app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
     return Results.Ok("User roles updated");
 }).RequireAuthorization(Roles.Administrator);
 
-app.MapPost("/greenpoints/addModify", (EditGreenPoint greenPoint, GreenPointsContext context) =>
+app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
 {
-    User? collaborator = context.Users.Find(greenPoint.Collaborator.Id);
+    if (editGreenPoint.Original is null && editGreenPoint.Latitude is null || editGreenPoint.Longitude is null || string.IsNullOrEmpty(editGreenPoint.Name.Trim()))
+        return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude");
+
+    User? collaborator = context.Users.Find(editGreenPoint.Collaborator.Id);
 
     if (collaborator is null)
         return Results.NotFound("User not found");
 
-    greenPoint.setCollaborator(collaborator);
-    context.EditGreenPoints.Add(greenPoint);
+    editGreenPoint.SetCollaborator(collaborator);
+    context.EditGreenPoints.Add(editGreenPoint);
     context.SaveChanges();
-    return Results.Ok("GreenPoint accepted");
+    return Results.Ok("GreenPoint sent");
 }).RequireAuthorization(Roles.Collaborator);
+
+app.MapPost("/greenpoints/accept", (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
+{
+    GreenPoint greenPoint;
+    try { greenPoint = editGreenPoint.ToGreenPoint(); }
+    catch { return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude"); }
+
+    if (editGreenPoint.Original is null)
+        context.GreenPoints.Add(greenPoint);
+    else
+    {
+        GreenPoint? original = context.GreenPoints.Find(editGreenPoint.Original.Id);
+        if (greenPoint is null)
+            return Results.NotFound("Original point not found");
+        original = greenPoint;
+        context.GreenPoints.Entry(original).State = EntityState.Modified;
+    }
+    context.SaveChanges();
+    return Results.Ok("Greenpoint accepted");
+}).RequireAuthorization(Roles.Editor);
+
+/*
+ * if a new point is porposed by more than one user we cant relate them, after accepting one editors should be able to make that relationship in order to accept extra properties
+ */
 
 app.Run();
