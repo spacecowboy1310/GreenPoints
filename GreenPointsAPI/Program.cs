@@ -160,12 +160,13 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
     return Results.Ok("User confirmed");
 });
 
-app.MapPost("/changeRole", (GreenPointsContext context, int userId, List<string> newRoles) => {
-    User? user = context.Users.Find(userId);
+app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
+{
+    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.userId);
     if (user is null)
         return Results.NotFound("User not found");
     List<Role> roles = new();
-    foreach (string role in newRoles)
+    foreach (string role in request.newRoles)
     {
         Role? temp = context.Roles.FirstOrDefault(r => r.Name == role);
         if (temp is not null)
@@ -177,13 +178,13 @@ app.MapPost("/changeRole", (GreenPointsContext context, int userId, List<string>
     return Results.Ok("User roles updated");
 }).RequireAuthorization(Roles.Administrator);
 
-app.MapPost("/greenpoints", (GreenPointsContext context, EditGreenPoint greenPoint) =>
+app.MapPost("/greenpoints/addModify", (EditGreenPoint greenPoint, GreenPointsContext context) =>
 {
     User? collaborator = context.Users.Find(greenPoint.Collaborator.Id);
-    
+
     if (collaborator is null)
         return Results.NotFound("User not found");
-    
+
     greenPoint.setCollaborator(collaborator);
     context.EditGreenPoints.Add(greenPoint);
     context.SaveChanges();
