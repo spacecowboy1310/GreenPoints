@@ -225,4 +225,22 @@ app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext co
     return Results.Ok("Greenpoint accepted");
 }).RequireAuthorization(Roles.Editor);
 
+app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1, double lat2, double lon2, GreenPointsContext context) =>
+    Results.Ok(context.GreenPoints.Include(g => g.Properties)
+                                  .Include(g => g.Collaborators)
+                                  .Where(g => g.Latitude >= Math.Min(lat1, lat2)
+                                           && g.Latitude <= Math.Max(lat1, lat2)
+                                           && g.Longitude >= Math.Min(lon1, lon2)
+                                           && g.Longitude <= Math.Max(lon1, lon2)).ToList()));
+
+
+app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
+    Results.Ok(context.GreenPoints.Include(g => g.Properties)
+                                  .Include(g => g.Collaborators)
+                                  .FirstOrDefault(g => g.Id == id)));
+
+app.MapGet("/greenpoints/request", (GreenPointsContext context) =>
+    Results.Ok(context.EditGreenPoints.Include(e => e.Properties).ToList()))
+    .RequireAuthorization(Roles.Editor);
+
 app.Run();
