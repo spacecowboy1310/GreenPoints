@@ -161,11 +161,11 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
 
 app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
 {
-    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.userId);
+    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.UserId);
     if (user is null)
         return Results.NotFound("User not found");
     List<Role> roles = new();
-    foreach (string role in request.newRoles)
+    foreach (string role in request.NewRoles)
     {
         Role? temp = context.Roles.FirstOrDefault(r => r.Name == role);
         if (temp is not null)
@@ -193,28 +193,36 @@ app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsC
     return Results.Ok("GreenPoint sent");
 }).RequireAuthorization(Roles.Collaborator);
 
-app.MapPost("/greenpoints/accept", (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
+/*
+ * if a new point is porposed by more than one user we cant relate them, after accepting one editors should be able to make that relationship in order to accept extra properties
+ */
+app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext context) =>
 {
     GreenPoint greenPoint;
-    try { greenPoint = editGreenPoint.ToGreenPoint(); }
-    catch { return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude"); }
-
-    if (editGreenPoint.Original is null)
-        context.GreenPoints.Add(greenPoint);
-    else
+    if (request.EditGreenPoint is not null)
     {
-        GreenPoint? original = context.GreenPoints.Find(editGreenPoint.Original.Id);
-        if (greenPoint is null)
-            return Results.NotFound("Original point not found");
-        original = greenPoint;
-        context.GreenPoints.Entry(original).State = EntityState.Modified;
+        try { greenPoint = request.EditGreenPoint.ToGreenPoint(); }
+        catch { return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude"); }
+
+        if (request.EditGreenPoint.Original is null)
+            context.GreenPoints.Add(greenPoint);
+        else
+        {
+            GreenPoint? original = context.GreenPoints.Find(request.EditGreenPoint.Original.Id);
+            if (original is null)
+                return Results.NotFound("Original point not found");
+            // We keep record of every collaborator
+            greenPoint.Collaborators = greenPoint.Collaborators.Union(original.Collaborators).ToList();
+            original = greenPoint;
+            context.GreenPoints.Entry(original).State = EntityState.Modified;
+        }
+    }
+    if (request.ChangeIDs is not null)
+    {
+        context.EditGreenPoints.RemoveRange(context.EditGreenPoints.Where(e => request.ChangeIDs.Contains(e.Id)));
     }
     context.SaveChanges();
     return Results.Ok("Greenpoint accepted");
 }).RequireAuthorization(Roles.Editor);
-
-/*
- * if a new point is porposed by more than one user we cant relate them, after accepting one editors should be able to make that relationship in order to accept extra properties
- */
 
 app.Run();

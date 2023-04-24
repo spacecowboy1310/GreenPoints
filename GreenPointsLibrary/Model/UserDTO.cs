@@ -10,6 +10,6 @@
 
 public class roleRequest
 {
-    public int userId { get; set; }
-    public List<string> newRoles { get; set; }
+    public int UserId { get; set; }
+    public List<string> NewRoles { get; set; }
 }
