@@ -1,10 +1,10 @@
-function initialize1(token) {
+function initializeMap(token) {
     mapboxgl.accessToken = token;
 
-    var map1 = new mapboxgl.Map({
-        container: 'map1',
+    var map = new mapboxgl.Map({
+        container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
-        center: [28.034088, -26.195246], // Longitude, Latitude
-        zoom: 9
+        center: [-2.9429086, 43.2633976], // Longitude, Latitude
+        zoom: 12
     });
 }

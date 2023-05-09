@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenPoints", "GreenPoint\G
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenPointsLibrary", "GreenPointsLibrary\GreenPointsLibrary.csproj", "{5CCC802F-01ED-48C2-BD3D-43BD9D470CB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GreenPointsAPI", "GreenPointsAPI\GreenPointsAPI.csproj", "{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GreenPointsAPI", "GreenPointsAPI\GreenPointsAPI.csproj", "{5DBCC5AF-19F3-42D1-AE39-A63CC260FF08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

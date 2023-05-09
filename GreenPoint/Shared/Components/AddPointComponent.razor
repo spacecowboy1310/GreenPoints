@@ -1,0 +1,32 @@
+﻿<div class="main">
+    <form>
+        <div class="card p-3">
+            <div class="form-group row">
+                <div class="form-group col-md-6">
+                    <label for="inputLatitud">Coordenadas</label>
+                    <input type="email" class="form-control" id="inputLatitud" placeholder="Latitud" disabled>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="inputLongitud"></label>
+                    <input type="password" class="form-control" id="inputLongitud" placeholder="Longitud" disabled>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="inputAddress">Nombre del Punto Verde</label>
+                <input type="text" class="form-control" id="inputAddress" placeholder="Nombre">
+            </div>
+            @foreach(ExtraFieldComponent extraFieldComponent in extraFieldComponents){
+                <ExtraFieldComponent/>
+            }
+            <button class="btn btn-primary" @onclick="AddExtraField">Agregar</button>
+        </div>
+    </form>
+</div>
+
+@code {
+    private List<ExtraFieldComponent> extraFieldComponents = new List<ExtraFieldComponent>();
+
+    private void AddExtraField(){
+        extraFieldComponents.Add(new ExtraFieldComponent());
+    }
+}

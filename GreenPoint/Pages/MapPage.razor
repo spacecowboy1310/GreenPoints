@@ -1,21 +1,52 @@
-﻿@page "/"
+﻿@page "/map"
 
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
-<h1>Display Google Map</h1>
+@if (addingPoint)
+{
+    <AddPointComponent />
+}
 
-<div id="map1" style="height:500px;width:100%;border-radius: 10px" />
+<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" />
+
+<button class="addPoint" @onclick="AddPointSurvey">
+    <span class="oi @icon"></span>
+</button>
 
 @code {
 
+    private bool addingPoint = false;
+    private string opacity = "100";
+    private string icon = "oi-plus";
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var apikey = Http.GetFromJsonAsync<string>("https://localhost:7281//apikey");
+        var apikey = "pk.eyJ1Ijoic3BhY2UtY293Ym95IiwiYSI6ImNsZW1yM3Z1ZTE4NGkzcW40eGdpdGNuYjcifQ.baBUxOLdUB2i7auVsvDGyQ";
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("initialize1", apikey);
+            await JSRuntime.InvokeVoidAsync("initializeMap", apikey);
         }
+    }
+
+    private void ChangeAppearance()
+    {
+        if (addingPoint)
+        {
+            opacity = "50";
+            icon = "oi-x";
+        } else
+        {
+            opacity = "100";
+            icon = "oi-plus";
+        }
+    }
+
+    private void AddPointSurvey()
+    {
+        addingPoint = !addingPoint;
+        ChangeAppearance();
+        StateHasChanged();
     }
 
 }

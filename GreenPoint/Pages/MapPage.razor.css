@@ -1,0 +1,31 @@
+﻿.addPoint {
+    height: 4rem;
+    width: 4rem;
+    position: fixed;
+    z-index: 3;
+    left: 50%;
+    bottom: 3rem;
+    transform: translate(-50%);
+    background-color: rgb(28, 200, 52, 0.95);
+    border: none;
+    border-radius: 50%;
+    outline: none;
+    box-shadow: 0 0 4rem rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: transform, background-color;
+    transition-timing-function: ease;
+    transition-duration: 200ms;
+    color: rgb(13, 51, 4);
+}
+
+    .addPoint:hover {
+        transform: translateX(-50%) scale(1.1);
+    }
+    .addPoint:active {
+        transform: translateX(-50%) scale(0.90);
+    }
+
+#map {
+    width: 100vw;
+    height: 100vh;
+}
