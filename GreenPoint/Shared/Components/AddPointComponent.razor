@@ -2,28 +2,29 @@
     <form>
         <div class="card p-3">
             <div class="form-group row">
-                <label for="inputLatitud">Coordenadas</label><p>(Puede clic en el mapa para añadir las coordenadas)</p>
+                <label for="inputLatitud">Coordenadas</label><p>(Puede hacer clic en el mapa para añadir las coordenadas)</p>
             </div>
             <div class="form-group row">
-                <div class="form-group col-md-6">                
-                    <input type="email" class="form-control" id="inputLatitud" placeholder="Latitud">
+                <div class="form-group col-md-5">
+                    <input type="text" class="form-control" id="inputLatitud" placeholder="Latitud">
                 </div>
-                <div class="form-group col-md-6">
-                    <input type="password" class="form-control" id="inputLongitud" placeholder="Longitud">
+                <div class="form-group col-md-5">
+                    <input type="text" class="form-control" id="inputLongitud" placeholder="Longitud">
                 </div>
             </div>
-            <br/>
+            <br />
             <div class="form-group">
                 <label for="inputAddress">Nombre del Punto Verde</label>
                 <input type="text" class="form-control" id="inputAddress" placeholder="Nombre">
             </div>
-            <hr />
+            <div class="form-group row mt-2">
+                <h6>Campos extra:</h6>
+            </div>
             @foreach (DescriptionProperty extra in extraFieldComponents)
             {
-                <ExtraFieldComponent descriptionProperty="extra" />
+                <ExtraFieldComponent DescriptionProperty="extra" Remove="RemoveExtraField" />
             }
-            <br />
-            <div class="form-group col-md-6">
+            <div class="form-group col-md-6 mb-2">
                 <input type="button" class="btn btn-primary" value="Añadir Caracteristica" onclick="@AddExtraField" />
             </div>
         </div>
@@ -33,10 +34,24 @@
 @code {
     private List<DescriptionProperty> extraFieldComponents = new List<DescriptionProperty>();
 
-    private void AddExtraField(){
+    private void AddExtraField()
+    {
         DescriptionProperty descriptionProperty = new DescriptionProperty();
         descriptionProperty.Description = "";
         descriptionProperty.Name = "";
+        descriptionProperty.Id = extraFieldComponents.Count; // temporary id so it can bee deleted later
         extraFieldComponents.Add(descriptionProperty);
+    }
+
+    private void RemoveExtraField(int id)
+    {
+        foreach (DescriptionProperty extra in extraFieldComponents)
+        {
+            if (extra.Id == id)
+            {
+                extraFieldComponents.Remove(extra);
+                break;
+            }
+        }
     }
 }
