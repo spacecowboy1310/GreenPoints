@@ -1,21 +1,24 @@
-﻿<div class="main">
-    <form>
+﻿@inject HttpClient Http
+@inject GreenPointService GreenPointService;
+
+<div class="main">
+    <form onsubmit="@CreatePoint">
         <div class="card p-3">
             <div class="form-group row">
                 <label for="inputLatitud">Coordenadas</label><p>(Puede hacer clic en el mapa para añadir las coordenadas)</p>
             </div>
             <div class="form-group row">
                 <div class="form-group col-md-5">
-                    <input type="text" class="form-control" id="inputLatitud" placeholder="Latitud">
+                    <input type="text" class="form-control" id="inputLatitud" placeholder="Latitud" required>
                 </div>
                 <div class="form-group col-md-5">
-                    <input type="text" class="form-control" id="inputLongitud" placeholder="Longitud">
+                    <input type="text" class="form-control" id="inputLongitud" placeholder="Longitud" required>
                 </div>
             </div>
             <br />
             <div class="form-group">
                 <label for="inputAddress">Nombre del Punto Verde</label>
-                <input type="text" class="form-control" id="inputAddress" placeholder="Nombre">
+                <input type="text" class="form-control" id="inputAddress" placeholder="Nombre" required>
             </div>
             <div class="form-group row mt-2">
                 <h6>Campos extra:</h6>
@@ -25,7 +28,11 @@
                 <ExtraFieldComponent DescriptionProperty="extra" Remove="RemoveExtraField" />
             }
             <div class="form-group col-md-6 mb-2">
-                <input type="button" class="btn btn-primary" value="Añadir Caracteristica" onclick="@AddExtraField" />
+                <input type="button" class="btn btn-primary" value="Añadir un campo extra" onclick="@AddExtraField" />
+            </div>
+            <hr />
+            <div class="form-group col-md-6 mb-2">
+                <input type="submit" class="btn btn-primary" value="Crear punto" />
             </div>
         </div>
     </form>
@@ -33,6 +40,7 @@
 
 @code {
     private List<DescriptionProperty> extraFieldComponents = new List<DescriptionProperty>();
+    private EditGreenPoint editGreenPoint = new EditGreenPoint();
 
     private void AddExtraField()
     {
@@ -53,5 +61,22 @@
                 break;
             }
         }
+    }
+
+    private void CreatePoint()
+    {
+        User user = new User(); // TODO: get user from session
+        foreach (DescriptionProperty extra in extraFieldComponents)
+        {
+            EditDescriptionProperty editDescriptionProperty = new EditDescriptionProperty
+                {
+                    Name = extra.Name,
+                    Description = extra.Description,
+                    Collaborator = user
+                };
+            editGreenPoint.Properties.Add(editDescriptionProperty);
+        }
+        editGreenPoint.Collaborator = user;
+        GreenPointService.PostGreenPointRequest(editGreenPoint);
     }
 }

@@ -9,7 +9,8 @@
     <AddPointComponent />
 }
 
-<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" />
+<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" >
+</div>
 
 <button class="addPoint" @onclick="AddPointSurvey">
     <span class="oi @icon"></span>
@@ -27,6 +28,7 @@
         if (firstRender)
         {
             await JSRuntime.InvokeVoidAsync("initializeMap", apikey);
+            await JSRuntime.InvokeVoidAsync("addMarker", 43, -3);
         }
     }
 
@@ -36,7 +38,8 @@
         {
             opacity = "50";
             icon = "oi-x";
-        } else
+        }
+        else
         {
             opacity = "100";
             icon = "oi-plus";

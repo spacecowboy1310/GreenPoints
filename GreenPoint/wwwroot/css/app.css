@@ -1,5 +1,28 @@
 @import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
+.marker {
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50% 50% 50% 0;
+    border: 10px solid green;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    transform: rotate(-45deg);
+}
+
+    .marker::after {
+        position: absolute;
+        content: '';
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-left: 5px;
+        margin-top: 5px;
+        background-color: green;
+    }
+
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -19,7 +42,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {

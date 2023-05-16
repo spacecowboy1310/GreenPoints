@@ -1,7 +1,9 @@
+let map
+
 function initializeMap(token) {
     mapboxgl.accessToken = token;
 
-    const map = new mapboxgl.Map({
+    map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11',
         center: [-2.9429086, 43.2633976], // Longitude, Latitude
@@ -22,3 +24,13 @@ function initializeMap(token) {
     });
 }
 
+function addMarker(lat, lng) {
+
+    var element = document.createElement('div');
+    element.className = 'marker';
+    element.addEventListener('click', () => { window.alert('diste click') });
+
+    var marker = new mapboxgl.Marker(element)
+        .setLngLat({ lng, lat })
+        .addTo(map);
+}
