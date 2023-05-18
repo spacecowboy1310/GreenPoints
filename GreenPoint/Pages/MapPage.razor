@@ -3,13 +3,19 @@
 @inject IJSRuntime JSRuntime
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
+@inject GreenPointService GreenPointService
 
 @if (addingPoint)
 {
     <AddPointComponent />
 }
 
-<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" >
+<input type="hidden" id="lat0" @bind-value="lat0" ValueChange="@AddAllPointsVisible" />
+<input type="hidden" id="lng0" @bind-value="lng0" ValueChange="@AddAllPointsVisible" />
+<input type="hidden" id="lat1" @bind-value="lat1" ValueChange="@AddAllPointsVisible" />
+<input type="hidden" id="lng1" @bind-value="lng1" ValueChange="@AddAllPointsVisible" />
+
+<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%">
 </div>
 
 <button class="addPoint" @onclick="AddPointSurvey">
@@ -17,7 +23,10 @@
 </button>
 
 @code {
-
+    private double lat0;
+    private double lng0;
+    private double lat1;
+    private double lng1;
     private bool addingPoint = false;
     private string opacity = "100";
     private string icon = "oi-plus";
@@ -30,7 +39,19 @@
             await JSRuntime.InvokeVoidAsync("initializeMap", apikey);
             await JSRuntime.InvokeVoidAsync("addMarker", 43, -3);
         }
+        await AddAllPointsVisible();
     }
+
+    private async Task AddAllPointsVisible()
+    {
+        await JSRuntime.InvokeVoidAsync("removeAllMarkers");
+        await GreenPointService.GetGreenPointsInArea(lat0, lng0, lat1, lng1);
+        foreach(GreenPoint point in GreenPointService.GreenPoints)
+        {
+            await JSRuntime.InvokeVoidAsync("addMarker", point.Latitude, point.Longitude);
+        }
+    }
+
 
     private void ChangeAppearance()
     {
