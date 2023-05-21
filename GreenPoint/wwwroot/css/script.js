@@ -17,24 +17,30 @@ function initializeMap(token) {
 
             document.getElementById('inputLatitud').value = coordinates.lat
             document.getElementById('inputLongitud').value = coordinates.lng;
-
-            var bounds = new mapboxgl.LngLatBounds();
         });
         map.on('move', function () {
             var bounds = map.getBounds();
-            console.log(bounds);
-            document.getElementById('lat0').value = bounds.getNorthWest().lat;
-            document.getElementById('lng0').value = bounds.getNorthWest().lng;
-            document.getElementById('lat1').value = bounds.getSouthEast().lat;
-            document.getElementById('lng1').value = bounds.getSouthEast().lng;
+            document.getElementById('lat1').value = bounds.getNorthWest().lat;
+            document.getElementById('lng1').value = bounds.getNorthWest().lng;
+            document.getElementById('lat2').value = bounds.getSouthEast().lat;
+            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            DotNet.invokeMethodAsync('GreenPoints', 'AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
         });
         map.on('zoom', function () {
             var bounds = map.getBounds();
-            console.log(bounds);
-            document.getElementById('lat0').value = bounds.getNorthWest().lat;
-            document.getElementById('lng0').value = bounds.getNorthWest().lng;
-            document.getElementById('lat1').value = bounds.getSouthEast().lat;
-            document.getElementById('lng1').value = bounds.getSouthEast().lng;
+            document.getElementById('lat1').value = bounds.getNorthWest().lat;
+            document.getElementById('lng1').value = bounds.getNorthWest().lng;
+            document.getElementById('lat2').value = bounds.getSouthEast().lat;
+            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            DotNet.invokeMethodAsync('GreenPoints', 'GreenPoints.Pages.MapPage.razor.AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
+        });
+        map.on('load', function () {
+            var bounds = map.getBounds();
+            document.getElementById('lat1').value = bounds.getNorthWest().lat;
+            document.getElementById('lng1').value = bounds.getNorthWest().lng;
+            document.getElementById('lat2').value = bounds.getSouthEast().lat;
+            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            DotNet.invokeMethodAsync('GreenPoints', 'GreenPoints.Pages.MapPage.AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
         });
     });
 }

@@ -10,26 +10,37 @@
     <AddPointComponent />
 }
 
-<input type="hidden" id="lat0" @bind-value="lat0" ValueChange="@AddAllPointsVisible" />
-<input type="hidden" id="lng0" @bind-value="lng0" ValueChange="@AddAllPointsVisible" />
-<input type="hidden" id="lat1" @bind-value="lat1" ValueChange="@AddAllPointsVisible" />
-<input type="hidden" id="lng1" @bind-value="lng1" ValueChange="@AddAllPointsVisible" />
+<input type="hidden" id="lat1" />
+<input type="hidden" id="lng1" />
+<input type="hidden" id="lat2" />
+<input type="hidden" id="lng2" />
 
 <div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%">
 </div>
 
-<button class="addPoint" @onclick="AddPointSurvey">
-    <span class="oi @icon"></span>
-</button>
+<div class="wrapper @wrapperState">
+    <button class="options" @onclick="Unwrap">
+        <span class="oi @icon"></span>
+    </button>
+    <button class="session" @onclick="SessionChange">
+        <span class="oi @iconSession"></span>
+    </button>
+    <button class="change" @onclick="RequestChange">
+        <span class="oi oi-pencil"></span>
+    </button>
+    <button class="addMarker" @onclick="AddPointSurvey">
+        <span class="oi oi-map-marker"></span>
+    </button>
+</div>
+
+
 
 @code {
-    private double lat0;
-    private double lng0;
-    private double lat1;
-    private double lng1;
     private bool addingPoint = false;
     private string opacity = "100";
     private string icon = "oi-plus";
+    private string iconSession = "oi-account-login";
+    private string wrapperState = "";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -39,17 +50,41 @@
             await JSRuntime.InvokeVoidAsync("initializeMap", apikey);
             await JSRuntime.InvokeVoidAsync("addMarker", 43, -3);
         }
-        await AddAllPointsVisible();
     }
 
-    private async Task AddAllPointsVisible()
+    [JSInvokableAttribute("AddAllPointsVisible")]
+    public async Task AddAllPointsVisible(double Lat1, double Lng1, double Lat2, double Lng2)
     {
         await JSRuntime.InvokeVoidAsync("removeAllMarkers");
-        await GreenPointService.GetGreenPointsInArea(lat0, lng0, lat1, lng1);
-        foreach(GreenPoint point in GreenPointService.GreenPoints)
+        await GreenPointService.GetGreenPointsInArea(Lat1, Lng1, Lat2, Lng2);
+        foreach (GreenPoint point in GreenPointService.GreenPoints)
         {
             await JSRuntime.InvokeVoidAsync("addMarker", point.Latitude, point.Longitude);
         }
+        StateHasChanged();
+    }
+
+    private void SessionChange()
+    {
+
+    }
+
+    private void RequestChange()
+    {
+
+    }
+
+    private void Unwrap()
+    {
+        if (wrapperState == "")
+        {
+            wrapperState = "open";
+        }
+        else
+        {
+            wrapperState = "";
+        }
+        StateHasChanged();
     }
 
 

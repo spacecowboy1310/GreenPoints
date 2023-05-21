@@ -1,34 +1,70 @@
-﻿.addPoint {
-    height: 4rem;
-    width: 4rem;
-    position: fixed;
-    z-index: 3;
-    left: 50%;
-    bottom: 3rem;
-    transform: translate(-50%);
-    background-color: green;
-    border: none;
-    border-radius: 50%;
-    outline: none;
-    box-shadow: 0 0 4rem rgba(0, 0, 0, 0.35);
-    cursor: pointer;
-    transition: transform, background-color;
-    transition-timing-function: ease;
-    transition-duration: 200ms;
-    color: rgb(13, 51, 4);
+﻿* {
+    --animation: cubic-bezier(0.785, 0.18, 0.415, 1.65);
 }
 
-    .addPoint:hover {
-        transform: translateX(-50%) scale(1.1);
-    }
-
-    .addPoint:active {
-        transform: translateX(-50%) scale(0.90);
-    }
 
 #map {
     width: 100vw;
     height: 100vh;
+}
+
+.wrapper {
+    position: absolute;
+    left: 50%;
+    bottom: 6rem;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1.2rem;
+}
+
+    .wrapper button {
+        outline: none;
+        border: none;
+        height: 4rem;
+        width: 4rem;
+        background-color: green;
+        box-shadow: 0px 0px 10px gray;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-content: center;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .wrapper button span {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .wrapper button:hover {
+            transform: scale(1.1);
+        }
+
+    .wrapper .options {
+        z-index: 99;
+        bottom: -6rem;
+        transition: 500ms transform var(--animation);
+    }
+
+    .wrapper .addMarker, .session, .change {
+        position: relative;
+        bottom: -6rem;
+        opacity: 0;
+        transform: rotatez(-45deg);
+        transition: 500ms all var(--animation);
+        pointer-events: none;
+    }
+
+.open .addMarker, .open .session, .open .change {
+    bottom: 0;
+    opacity: 1;
+    transform: rotatez(0deg);
+    pointer-events: auto;
+}
+
+.open .options {
+    transform: rotate(135deg);
 }
 
 .marker {
@@ -44,7 +80,7 @@
     background-color: green;
 }
 
-    /*.marker::after {
+/*.marker::after {
         content: '';
         width: 10px;
         height: 10px;
