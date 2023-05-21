@@ -42,7 +42,7 @@ builder.Services.AddAuthentication(config =>
 
 builder.Services.AddAuthorization(options =>
 {
-    // This code could be used to get all roles from the database
+    // This code could be used to get all roles from the database insteaad of hardcoding them
     //GreenPointsContext context = builder.Services.BuildServiceProvider().GetService<GreenPointsContext>();
     //foreach (string role in context.Roles.Select(r => r.Name).ToList())
     //{
@@ -61,17 +61,19 @@ var app = builder.Build();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseHttpsRedirection();
 
 // Endpoints
 
+/// <summary>The login endpoint used to verify user credentials and generate the session token</summary>
+/// <param name="userModel">A user object with the Mail and Password params</param>
+/// <returns>The UserDTO without its password and the session token</returns>
 app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 {
-    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Username == userModel.Username);
+    User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Mail == userModel.Mail);
 
     if (user is null)
-        return Results.NotFound(new { message = "Username not found" });
+        return Results.NotFound(new { message = "E-mail not found" });
 
     PasswordHasher<User> hasher = new();
     switch (hasher.VerifyHashedPassword(user, user.Password, userModel.Password))
@@ -96,12 +98,7 @@ app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 
 app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
 {
-    User? user = context.Users.FirstOrDefault(user => user.Username == userModel.Username);
-
-    if (user is not null)
-        return Results.Conflict("Username already exists");
-
-    user = context.Users.FirstOrDefault(user => user.Mail == userModel.Mail);
+    User? user = context.Users.FirstOrDefault(user => user.Mail == userModel.Mail);
 
     if (user is not null)
         return Results.Conflict("E-mail already registered");
