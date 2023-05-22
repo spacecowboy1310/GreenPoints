@@ -24,7 +24,6 @@ function initializeMap(token) {
             document.getElementById('lng1').value = bounds.getNorthWest().lng;
             document.getElementById('lat2').value = bounds.getSouthEast().lat;
             document.getElementById('lng2').value = bounds.getSouthEast().lng;
-            DotNet.invokeMethodAsync('GreenPoints', 'AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
         });
         map.on('zoom', function () {
             var bounds = map.getBounds();
@@ -32,7 +31,6 @@ function initializeMap(token) {
             document.getElementById('lng1').value = bounds.getNorthWest().lng;
             document.getElementById('lat2').value = bounds.getSouthEast().lat;
             document.getElementById('lng2').value = bounds.getSouthEast().lng;
-            DotNet.invokeMethodAsync('GreenPoints', 'GreenPoints.Pages.MapPage.razor.AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
         });
         map.on('load', function () {
             var bounds = map.getBounds();
@@ -40,7 +38,6 @@ function initializeMap(token) {
             document.getElementById('lng1').value = bounds.getNorthWest().lng;
             document.getElementById('lat2').value = bounds.getSouthEast().lat;
             document.getElementById('lng2').value = bounds.getSouthEast().lng;
-            DotNet.invokeMethodAsync('GreenPoints', 'GreenPoints.Pages.MapPage.AddAllPointsVisible', bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat), bounds.getSouthEast().lng;
         });
     });
 }

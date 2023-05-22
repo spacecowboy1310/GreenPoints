@@ -56,7 +56,13 @@
         pointer-events: none;
     }
 
-.open .addMarker, .open .session, .open .change {
+.open-loged .addMarker, .open-loged .session, .open-loged .change {
+    bottom: 0;
+    opacity: 1;
+    transform: rotatez(0deg);
+    pointer-events: auto;
+}
+.open .session {
     bottom: 0;
     opacity: 1;
     transform: rotatez(0deg);

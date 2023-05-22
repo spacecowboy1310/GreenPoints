@@ -13,7 +13,7 @@ public static class Endpoints
     private static string Accept = "/accept";
 
     public static string GetURLForConfirm(Guid id) { return URI + Confirm + $"/{id}"; }
-    public static string PostURLForLogin() { return URI + Endpoints.Login; }
+    public static string PostURLForLogin() { return URI + Login; }
     public static string PostURLForRegister() { return URI + Register; }
     public static string PostURLForChangeRole() { return URI + ChangeRole; }
 

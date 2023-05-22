@@ -1,0 +1,116 @@
+﻿@page "/login"
+
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+@if (!isRegister)
+{
+    <div class="main card position-absolute align-content-center">
+        <form onsubmit="@Submit">
+            <div class="form-group row">
+                <span class="logo-greenpoints" />
+                <h1>Iniciar sesión</h1>
+                <p>Inicia sesión para continuar</p>
+            </div>
+            <div class="form-group row">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="Correo electrónico" @bind-value="LoginUser.Mail" required />
+            </div>
+            <br />
+            <div class="form-group row">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Contraseña" @bind-value="LoginUser.Password" required />
+            </div>
+            <br />
+            <div class="form-group row btn-group btn-group-toggle">
+                <button class="btn btn-primary" type="submit">Iniciar sesión</button>
+            </div>
+        </form>
+        <div class="card-header-pills pt-5">
+            <p>¿No estás registrado? <a type="button" class="link-nav" @onclick="ChangeToRegister">Regístrate</a></p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="main card position-absolute align-content-center">
+        <form onsubmit="@Submit">
+            <div class="form-group row">
+                <span class="logo-greenpoints" />
+                <h1>Registrarse</h1>
+                <p>Registrate para continuar</p>
+            </div>
+            <div class="form-group row">
+                <label for="username">Nombre de usuario</label>
+                <input type="username" id="username" name="username" placeholder="Nombre de usuario" @bind-value="RegisterUser.Username" required />
+            </div>
+            <br /><div class="form-group row">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" name="email" placeholder="Correo electrónico" @bind-value="RegisterUser.Mail" required />
+            </div>
+            <br />
+            <div class="form-group row">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="Contraseña" @bind-value="RegisterUser.Password" required />
+            </div>
+            <br />
+            <div class="form-group row btn-group btn-group-toggle">
+                <button class="btn btn-primary" type="submit">Registrarse</button>
+            </div>
+        </form>
+    </div>
+}
+
+@code {
+
+    [Parameter]
+    public EventCallback CloseThis { get; set; }
+
+    private UserDTO LoginUser = new UserDTO();
+    private TemporalUser RegisterUser = new TemporalUser();
+    private bool isRegister = false;
+
+    private void Submit()
+    {
+        if (isRegister)
+        {
+            Register();
+        }
+        else
+        {
+            Login();
+        }
+    }
+
+    private void ChangeToRegister()
+    {
+        isRegister = true;
+    }
+
+    private void Login()
+    {
+        bool ok = UserService.Login(LoginUser).Result;
+        if (ok)
+        {
+            CloseThis.InvokeAsync();
+        }
+        else
+        {
+            //TODO: show error message
+        }
+    }
+
+    private void Register()
+    {
+        bool ok = UserService.Register(RegisterUser).Result;
+        if (ok)
+        {
+            CloseThis.InvokeAsync();
+        }
+        else
+        {
+            //TODO: show error message
+        }
+    }
+}

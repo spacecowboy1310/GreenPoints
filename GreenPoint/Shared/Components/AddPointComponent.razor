@@ -1,5 +1,6 @@
 ﻿@inject HttpClient Http
 @inject GreenPointService GreenPointService;
+@inject UserService UserService;
 
 <div class="main">
     <form onsubmit="@CreatePoint">
@@ -65,7 +66,8 @@
 
     private void CreatePoint()
     {
-        User user = new User(); // TODO: get user from session
+        User user = new User();
+        user.Id = UserService.user.Id;
         foreach (DescriptionProperty extra in extraFieldComponents)
         {
             EditDescriptionProperty editDescriptionProperty = new EditDescriptionProperty

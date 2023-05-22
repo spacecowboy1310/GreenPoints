@@ -13,3 +13,15 @@ public class roleRequest
     public int UserId { get; set; }
     public List<string> NewRoles { get; set; }
 }
+
+public class UserWithToken
+{
+    public UserDTO User { get; set; }
+    public string Token { get; set; }
+
+    public UserWithToken(UserDTO user, string token)
+    {
+        User = user;
+        Token = token;
+    }
+}

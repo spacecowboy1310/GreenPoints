@@ -3,13 +3,23 @@ using GreenPointsAPI.Properties;
 using GreenPointsAPI.Services;
 using GreenPointsAPI.Services.MailService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+const string MyAllowSpecificOrigins = "CorsPolicy";
 
 // Add services to the container.
+builder.Services.AddCors(options =>
+{
+    // add cors options
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:7120");
+    });
+});
 
 // Database context
 builder.Services.AddDbContext<GreenPointsContext>(options =>
@@ -70,7 +80,7 @@ app.UseHttpsRedirection();
 /// </summary>
 /// <param name="userModel">A user object with the Mail and Password params</param>
 /// <returns>The UserDTO without its password and the session token</returns>
-app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
+app.MapPost("/login", [EnableCors(MyAllowSpecificOrigins)] (UserDTO userModel, GreenPointsContext context) =>
 {
     User? user = context.Users.Include(u => u.Roles).FirstOrDefault(user => user.Mail == userModel.Mail);
 
@@ -95,7 +105,7 @@ app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
 
     UserDTO dto = user.ToDTO();
 
-    return Results.Ok(new { dto, token });
+    return Results.Ok(new UserWithToken(dto, token));
 });
 
 /// <summary>
@@ -283,5 +293,7 @@ app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
 app.MapGet("/greenpoints/request", (GreenPointsContext context) =>
     Results.Ok(context.EditGreenPoints.Include(e => e.Properties).ToList()))
     .RequireAuthorization(Roles.Editor);
+
+app.UseCors();
 
 app.Run();

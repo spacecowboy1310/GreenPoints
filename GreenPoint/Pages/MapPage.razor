@@ -4,19 +4,24 @@
 @inject HttpClient Http
 @inject NavigationManager NavigationManager
 @inject GreenPointService GreenPointService
+@inject UserService UserService
 
 @if (addingPoint)
 {
     <AddPointComponent />
 }
 
-<input type="hidden" id="lat1" />
-<input type="hidden" id="lng1" />
-<input type="hidden" id="lat2" />
-<input type="hidden" id="lng2" />
+@if (sessionChange)
+{
+    <LoginComponent CloseThis="CloseLogin" />
+}
 
-<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%">
-</div>
+<input type="hidden" id="lat1"  />
+<input type="hidden" id="lng1" @bind="lng1" />
+<input type="hidden" id="lat2" @bind="lat2" />
+<input type="hidden" id="lng2" @bind="lng2" />
+
+<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" @onwheel="@(() => AddAllPointsVisible(lat1, lng1, lat2, lng2))" />
 
 <div class="wrapper @wrapperState">
     <button class="options" @onclick="Unwrap">
@@ -36,7 +41,12 @@
 
 
 @code {
+    private double lat1;
+    private double lng1;
+    private double lat2;
+    private double lng2;
     private bool addingPoint = false;
+    private bool sessionChange = false;
     private string opacity = "100";
     private string icon = "oi-plus";
     private string iconSession = "oi-account-login";
@@ -52,7 +62,6 @@
         }
     }
 
-    [JSInvokableAttribute("AddAllPointsVisible")]
     public async Task AddAllPointsVisible(double Lat1, double Lng1, double Lat2, double Lng2)
     {
         await JSRuntime.InvokeVoidAsync("removeAllMarkers");
@@ -66,7 +75,15 @@
 
     private void SessionChange()
     {
+        sessionChange = !sessionChange;
+        addingPoint = false;
 
+        StateHasChanged();
+    }
+
+    public void CloseLogin()
+    {
+        sessionChange = false;
     }
 
     private void RequestChange()
@@ -78,34 +95,49 @@
     {
         if (wrapperState == "")
         {
-            wrapperState = "open";
+            if (UserService.user != null)
+            {
+                wrapperState = "open-loged";
+                iconSession = "oi-account-logout";
+            }
+            else
+            {
+                wrapperState = "open";
+                iconSession = "oi-person";
+            }
+            opacity = "50";
+
         }
         else
         {
             wrapperState = "";
-        }
-        StateHasChanged();
-    }
-
-
-    private void ChangeAppearance()
-    {
-        if (addingPoint)
-        {
-            opacity = "50";
-            icon = "oi-x";
-        }
-        else
-        {
             opacity = "100";
-            icon = "oi-plus";
+            sessionChange = false;
+            addingPoint = false;
         }
+
+        StateHasChanged();
     }
 
     private void AddPointSurvey()
     {
-        addingPoint = !addingPoint;
-        ChangeAppearance();
+        if (addingPoint)
+        {
+            addingPoint = false;
+        }
+        else
+        {
+            if (UserService.user == null)
+            {
+                addingPoint = false;
+                sessionChange = false;
+                //popup
+                return;
+            }
+            addingPoint = true;
+            sessionChange = false;
+        }
+
         StateHasChanged();
     }
 
