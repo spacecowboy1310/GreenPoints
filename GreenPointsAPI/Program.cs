@@ -65,7 +65,9 @@ app.UseHttpsRedirection();
 
 // Endpoints
 
-/// <summary>The login endpoint used to verify user credentials and generate the session token</summary>
+/// <summary>
+/// The login endpoint used to verify user credentials and generate the session token
+/// </summary>
 /// <param name="userModel">A user object with the Mail and Password params</param>
 /// <returns>The UserDTO without its password and the session token</returns>
 app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
@@ -96,6 +98,11 @@ app.MapPost("/login", (UserDTO userModel, GreenPointsContext context) =>
     return Results.Ok(new { dto, token });
 });
 
+/// <summary>
+/// Registers a new user.
+/// </summary>
+/// <param name="userModel">User model containing registration information.</param>
+/// <returns>Returns a response with success or failure message.</returns>
 app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
 {
     User? user = context.Users.FirstOrDefault(user => user.Mail == userModel.Mail);
@@ -133,6 +140,11 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
     return Results.Ok("User registered");
 });
 
+/// <summary>
+/// Endpoint to confirm a user's account based on the GUID in the URL.
+/// </summary>
+/// <param name="id">Unique identifier of the user to be confirmed.</param>
+/// <returns>Returns a response with success or failure message.</returns>
 app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
 {
     TemporalUser? temporalUser = context.TemporalUsers.Find(id);
@@ -156,6 +168,12 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
     return Results.Ok("User confirmed");
 });
 
+/// <summary>
+/// Endpoint to update a user's roles based on the request payload.
+/// Administrator authorization is required.
+/// </summary>
+/// <param name="request">Instance of roleRequest class containing user id and a list with all the roles for the user.</param>
+/// <returns>Returns a response with success or failure message.</returns>
 app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
 {
     User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.UserId);
@@ -174,6 +192,12 @@ app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
     return Results.Ok("User roles updated");
 }).RequireAuthorization(Roles.Administrator);
 
+/// <summary>
+/// Endpoint to store greenpoint proposals on the temporal table
+/// Collaborator authorization is required.
+/// </summary>
+/// <param name="editGreenPoint">Instance of EditGreenPoint with the proposed information, if it does not contain the Original parameter Latitude, Longitude and Name are required</param>
+/// <returns>Returns a response with success or failure message.</returns>
 app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
 {
     if (editGreenPoint.Original is null && editGreenPoint.Latitude is null || editGreenPoint.Longitude is null || string.IsNullOrEmpty(editGreenPoint.Name.Trim()))
@@ -190,9 +214,12 @@ app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsC
     return Results.Ok("GreenPoint sent");
 }).RequireAuthorization(Roles.Collaborator);
 
-/*
- * if a new point is porposed by more than one user we cant relate them, after accepting one editors should be able to make that relationship in order to accept extra properties
- */
+/// <summary>
+/// Endpoint to store greenpoint information on the master table and delete entries from the temporal table
+/// Editor authorization is required.
+/// </summary>
+/// <param name="request">Instance of AcceptRequest with the list of ids from the temporal table to delete and an instance of EditGreenpoint with the definitive information to store.</param>
+/// <returns>Returns a response with success or failure message.</returns>
 app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext context) =>
 {
     GreenPoint greenPoint;
@@ -222,6 +249,14 @@ app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext co
     return Results.Ok("Greenpoint accepted");
 }).RequireAuthorization(Roles.Editor);
 
+/// <summary>
+/// Endpoint to retrieve grenpoints between two points
+/// </summary>
+/// <param name="lat1">Latitude of the first point.</param>
+/// <param name="lon1">Longitude of the first point.</param>
+/// <param name="lat2">Latitude of the second point.</param>
+/// <param name="lon2">Longitude of the second point.</param>
+/// <returns>Returns the list of greenpoints.</returns>
 app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1, double lat2, double lon2, GreenPointsContext context) =>
     Results.Ok(context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
@@ -230,12 +265,21 @@ app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1
                                            && g.Longitude >= Math.Min(lon1, lon2)
                                            && g.Longitude <= Math.Max(lon1, lon2)).ToList()));
 
-
+/// <summary>
+/// Endpoint to retrieve the information of an specific greenpoint
+/// </summary>
+/// <param name="id">The id of the greenpoint.</param>
+/// <returns>An instance of Greenpoint with all its information.</returns>
 app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
     Results.Ok(context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
                                   .FirstOrDefault(g => g.Id == id)));
 
+/// <summary>
+/// Endpoint to retrieve all the greenpoint proposals
+/// Editor authorization is required.
+/// </summary>
+/// <returns>The list of EditGreenPoints.</returns>
 app.MapGet("/greenpoints/request", (GreenPointsContext context) =>
     Results.Ok(context.EditGreenPoints.Include(e => e.Properties).ToList()))
     .RequireAuthorization(Roles.Editor);
