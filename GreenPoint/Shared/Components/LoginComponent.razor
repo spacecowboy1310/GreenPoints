@@ -101,9 +101,9 @@ else
         }
     }
 
-    private void Register()
+    private async Task Register()
     {
-        bool ok = UserService.Register(RegisterUser).Result;
+        bool ok = await UserService.Register(RegisterUser);
         if (ok)
         {
             CloseThis.InvokeAsync();

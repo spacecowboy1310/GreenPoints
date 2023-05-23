@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /GreenPointsAPI/appsettings.json
 /GreenPointsAPI/Data/GreenpointsDB.db-shm
 /GreenPointsAPI/Data/GreenpointsDB.db-wal
+/GreenPointsAPI/appsettings.Development.json
