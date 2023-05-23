@@ -32,6 +32,18 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script>
+        Blazor.registerCustomEventType('mapchange', {
+            createEventArgs: event => {
+                return {
+                    Lat1: event.detail.Lat1,
+                    Lng1: event.detail.Lng1,
+                    Lat2: event.detail.Lat2,
+                    Lng2: event.detail.Lng2
+                };
+            }
+        });
+    </script>
 </body>
 
 </html>

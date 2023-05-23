@@ -21,7 +21,9 @@
 <input type="hidden" id="lat2" @bind="lat2" />
 <input type="hidden" id="lng2" @bind="lng2" />
 
-<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" @onwheel="@(() => AddAllPointsVisible(lat1, lng1, lat2, lng2))" />
+<div id="map" style="width: 100vw; height: 100vh; opacity:@opacity%" />
+
+<div id="AddAllPoints" @onmapchange="AddAllPointsVisible"></div>
 
 <div class="wrapper @wrapperState">
     <button class="options" @onclick="Unwrap">
@@ -62,10 +64,10 @@
         }
     }
 
-    public async Task AddAllPointsVisible(double Lat1, double Lng1, double Lat2, double Lng2)
+    public async Task AddAllPointsVisible(AreaEventArgs eventArgs)
     {
         await JSRuntime.InvokeVoidAsync("removeAllMarkers");
-        await GreenPointService.GetGreenPointsInArea(Lat1, Lng1, Lat2, Lng2);
+        await GreenPointService.GetGreenPointsInArea(eventArgs.Lat1, eventArgs.Lng1, eventArgs.Lat2, eventArgs.Lng2);
         foreach (GreenPoint point in GreenPointService.GreenPoints)
         {
             await JSRuntime.InvokeVoidAsync("addMarker", point.Latitude, point.Longitude);

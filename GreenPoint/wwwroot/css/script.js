@@ -20,24 +20,15 @@ function initializeMap(token) {
         });
         map.on('move', function () {
             var bounds = map.getBounds();
-            document.getElementById('lat1').value = bounds.getNorthWest().lat;
-            document.getElementById('lng1').value = bounds.getNorthWest().lng;
-            document.getElementById('lat2').value = bounds.getSouthEast().lat;
-            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            AddAllPoints(bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat, bounds.getSouthEast().lng);
         });
         map.on('zoom', function () {
             var bounds = map.getBounds();
-            document.getElementById('lat1').value = bounds.getNorthWest().lat;
-            document.getElementById('lng1').value = bounds.getNorthWest().lng;
-            document.getElementById('lat2').value = bounds.getSouthEast().lat;
-            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            AddAllPoints(bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat, bounds.getSouthEast().lng);
         });
         map.on('load', function () {
             var bounds = map.getBounds();
-            document.getElementById('lat1').value = bounds.getNorthWest().lat;
-            document.getElementById('lng1').value = bounds.getNorthWest().lng;
-            document.getElementById('lat2').value = bounds.getSouthEast().lat;
-            document.getElementById('lng2').value = bounds.getSouthEast().lng;
+            AddAllPoints(bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat, bounds.getSouthEast().lng);
         });
     });
 }
@@ -61,4 +52,17 @@ function removeAllMarkers() {
             currentMarkers[i].remove();
         }
     }
+}
+
+function AddAllPoints(lat1, lng1, lat2, lng2) {
+    const event = new CustomEvent('mapchange', {
+        bubbles: true,
+        detail: {
+            Lat1: lat1,
+            Lng1: lng1,
+            Lat2: lat2,
+            Lng2: lng2
+        }
+    });
+    document.getElementById('AddAllPoints').dispatchEvent(event);
 }
