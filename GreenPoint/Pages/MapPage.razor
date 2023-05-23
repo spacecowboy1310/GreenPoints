@@ -8,12 +8,12 @@
 
 @if (addingPoint)
 {
-    <AddPointComponent />
+    <AddPointComponent CloseThis="Close" />
 }
 
 @if (sessionChange)
 {
-    <LoginComponent CloseThis="CloseLogin" />
+    <LoginComponent CloseThis="Close" />
 }
 
 <input type="hidden" id="lat1"  />
@@ -75,15 +75,25 @@
 
     private void SessionChange()
     {
-        sessionChange = !sessionChange;
+        if (UserService.user == null)
+        {
+            sessionChange = !sessionChange;
+        }
+        else
+        {
+            sessionChange = false;
+            UserService.user = null;
+            wrapperState = "";
+            opacity = "100";
+        }
         addingPoint = false;
-
         StateHasChanged();
     }
 
-    public void CloseLogin()
+    public void Close()
     {
         sessionChange = false;
+        addingPoint = false;
         wrapperState = "";
         opacity = "100";
         StateHasChanged();

@@ -1,6 +1,7 @@
 ﻿@inject HttpClient Http
-@inject GreenPointService GreenPointService;
-@inject UserService UserService;
+@inject GreenPointService GreenPointService
+@inject UserService UserService
+
 
 <div class="main">
     <form onsubmit="@CreatePoint">
@@ -10,16 +11,16 @@
             </div>
             <div class="form-group row">
                 <div class="form-group col-md-5">
-                    <input type="text" class="form-control" id="inputLatitud" placeholder="Latitud" required>
+                    <input type="text" class="form-control" id="inputLatitud" placeholder="Latitud" @bind-value="editGreenPoint.Latitude" required>
                 </div>
                 <div class="form-group col-md-5">
-                    <input type="text" class="form-control" id="inputLongitud" placeholder="Longitud" required>
+                    <input type="text" class="form-control" id="inputLongitud" placeholder="Longitud" @bind-value="editGreenPoint.Longitude" required>
                 </div>
             </div>
             <br />
             <div class="form-group">
                 <label for="inputAddress">Nombre del Punto Verde</label>
-                <input type="text" class="form-control" id="inputAddress" placeholder="Nombre" required>
+                <input type="text" class="form-control" id="inputAddress" placeholder="Nombre" @bind-value="editGreenPoint.Name" required>
             </div>
             <div class="form-group row mt-2">
                 <h6>Campos extra:</h6>
@@ -40,6 +41,9 @@
 </div>
 
 @code {
+
+    [Parameter]
+    public EventCallback CloseThis { get; set; }
     private List<DescriptionProperty> extraFieldComponents = new List<DescriptionProperty>();
     private EditGreenPoint editGreenPoint = new EditGreenPoint();
 
@@ -64,21 +68,33 @@
         }
     }
 
-    private void CreatePoint()
+    private async Task CreatePoint()
     {
         User user = new User();
         user.Id = UserService.user.Id;
         foreach (DescriptionProperty extra in extraFieldComponents)
         {
-            EditDescriptionProperty editDescriptionProperty = new EditDescriptionProperty
-                {
-                    Name = extra.Name,
-                    Description = extra.Description,
-                    Collaborator = user
-                };
-            editGreenPoint.Properties.Add(editDescriptionProperty);
+            if (extra.Name != null && extra.Name != "" && extra.Description != null && extra.Description != "")
+            {
+                EditDescriptionProperty editDescriptionProperty = new EditDescriptionProperty
+                    {
+                        Name = extra.Name,
+                        Description = extra.Description,
+                        Collaborator = user
+                    };
+                editGreenPoint.Properties.Add(editDescriptionProperty);
+            }
+            
         }
         editGreenPoint.Collaborator = user;
-        GreenPointService.PostGreenPointRequest(editGreenPoint);
+        bool ok = await GreenPointService.PostGreenPointRequest(editGreenPoint);
+        if (ok)
+        {
+            await CloseThis.InvokeAsync();
+        }
+        else
+        {
+            //TODO: show error
+        }
     }
 }
