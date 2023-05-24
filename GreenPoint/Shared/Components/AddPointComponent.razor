@@ -80,11 +80,10 @@
         {
             if (extra.Name != null && extra.Name != "" && extra.Description != null && extra.Description != "")
             {
-                EditDescriptionProperty editDescriptionProperty = new EditDescriptionProperty
+                DescriptionProperty editDescriptionProperty = new DescriptionProperty
                     {
                         Name = extra.Name,
-                        Description = extra.Description,
-                        Collaborator = user
+                        Description = extra.Description
                     };
                 editGreenPoint.Properties.Add(editDescriptionProperty);
             }

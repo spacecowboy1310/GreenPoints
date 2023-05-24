@@ -41,7 +41,6 @@ public class TemporalUser
     public Guid ID { get; set; }
     [NotNull]
     public string Username { get; set; }
-    [System.Text.Json.Serialization.JsonIgnore]
     [NotNull]
     public string Password { get; set; }
     [NotNull]
