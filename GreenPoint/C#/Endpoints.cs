@@ -21,7 +21,7 @@ public static class Endpoints
 
     public static string GetURLForGreenPoints(double lat1, double lon1, double lat2, double lon2)
     {
-        return URI + GreenPoints + Request + $"/{lat1}/{lon1}/{lat2}/{lon2}";
+        return URI + GreenPoints + $"/{lat1}/{lon1}/{lat2}/{lon2}";
     }
     public static string GetURLForGreenPoints(int id) { return URI + GreenPoints + $"/{id}";  }
     public static string GetURLForGreenPointRequest() { return URI + GreenPoints + Request;  }

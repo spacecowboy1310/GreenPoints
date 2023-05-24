@@ -88,9 +88,9 @@ else
         isRegister = true;
     }
 
-    private void Login()
+    private async Task Login()
     {
-        bool ok = UserService.Login(LoginUser).Result;
+        bool ok = await UserService.Login(LoginUser);
         if (ok)
         {
             CloseThis.InvokeAsync();
@@ -101,9 +101,9 @@ else
         }
     }
 
-    private void Register()
+    private async Task Register()
     {
-        bool ok = UserService.Register(RegisterUser).Result;
+        bool ok = await UserService.Register(RegisterUser);
         if (ok)
         {
             CloseThis.InvokeAsync();

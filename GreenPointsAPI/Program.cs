@@ -18,7 +18,7 @@ builder.Services.AddCors(options =>
     // add cors options
     options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("https://localhost:7120");
+        policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin();
     });
 });
 
@@ -114,7 +114,7 @@ app.MapPost("/login", [EnableCors(MyAllowSpecificOrigins)] (UserDTO userModel, G
 /// </summary>
 /// <param name="userModel">User model containing registration information.</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
+app.MapPost("/register", [EnableCors(MyAllowSpecificOrigins)] (TemporalUser userModel, GreenPointsContext context, IMailService mailService) =>
 {
     User? user = context.Users.FirstOrDefault(user => user.Mail == userModel.Mail);
 
@@ -156,7 +156,7 @@ app.MapPost("/register", (TemporalUser userModel, GreenPointsContext context, IM
 /// </summary>
 /// <param name="id">Unique identifier of the user to be confirmed.</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
+app.MapGet("/confirm/{id}", [EnableCors(MyAllowSpecificOrigins)] (Guid id, GreenPointsContext context) =>
 {
     TemporalUser? temporalUser = context.TemporalUsers.Find(id);
 
@@ -185,7 +185,7 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
 /// </summary>
 /// <param name="request">Instance of RoleRequest class containing user id and a list with all the roles for the user.</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/changeRole", (RoleRequest request, GreenPointsContext context) =>
+app.MapPost("/changeRole", [EnableCors(MyAllowSpecificOrigins)] (RoleRequest request, GreenPointsContext context) =>
 {
     User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.UserId);
     if (user is null)
@@ -209,7 +209,7 @@ app.MapPost("/changeRole", (RoleRequest request, GreenPointsContext context) =>
 /// </summary>
 /// <param name="editGreenPoint">Instance of EditGreenPoint with the proposed information, if it does not contain the Original parameter Latitude, Longitude and Name are required</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/greenpoints/request", (EditGreenPointDTO editGreenPoint, GreenPointsContext context) =>
+app.MapPost("/greenpoints/request", [EnableCors(MyAllowSpecificOrigins)] (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
 {
     if (editGreenPoint.Original is null && editGreenPoint.Latitude is null || editGreenPoint.Longitude is null || string.IsNullOrEmpty(editGreenPoint.Name.Trim()))
         return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude");
@@ -233,7 +233,7 @@ app.MapPost("/greenpoints/request", (EditGreenPointDTO editGreenPoint, GreenPoin
 /// </summary>
 /// <param name="request">Instance of AcceptRequest with the list of ids from the temporal table to delete and an instance of EditGreenpoint with the definitive information to store.</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext context) =>
+app.MapPost("/greenpoints/accept", [EnableCors(MyAllowSpecificOrigins)] (AcceptRequest request, GreenPointsContext context) =>
 {
     if (request.GreenPoint is not null)
     {
@@ -288,7 +288,7 @@ app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext co
 /// <param name="lat2">Latitude of the second point.</param>
 /// <param name="lon2">Longitude of the second point.</param>
 /// <returns>Returns the list of greenpoints.</returns>
-app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1, double lat2, double lon2, GreenPointsContext context) =>
+app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", [EnableCors(MyAllowSpecificOrigins)] (double lat1, double lon1, double lat2, double lon2, GreenPointsContext context) =>
 {
     List<GreenPoint> greenPoints = context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
@@ -296,7 +296,7 @@ app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1
                                            && g.Latitude <= Math.Max(lat1, lat2)
                                            && g.Longitude >= Math.Min(lon1, lon2)
                                            && g.Longitude <= Math.Max(lon1, lon2)).ToList();
-    List<GreenPointDTO> response = new();
+List<GreenPointDTO> response = new();
     foreach (GreenPoint greenPoint in greenPoints)
     {
         response.Add(greenPoint.ToDTO());
@@ -308,8 +308,8 @@ app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1
 /// Endpoint to retrieve the information of an specific greenpoint
 /// </summary>
 /// <param name="id">The id of the greenpoint.</param>
-/// <returns>An instance of GreenpointDTO with all its information.</returns>
-app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
+/// <returns>An instance of Greenpoint with all its information.</returns>
+app.MapGet("/greenpoints/{id}", [EnableCors(MyAllowSpecificOrigins)] (int id, GreenPointsContext context) =>
     Results.Ok(context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
                                   .FirstOrDefault(g => g.Id == id)?.ToDTO()));
@@ -319,7 +319,7 @@ app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
 /// Editor authorization is required.
 /// </summary>
 /// <returns>The list of EditGreenPoints.</returns>
-app.MapGet("/greenpoints/request", (GreenPointsContext context) =>
+app.MapGet("/greenpoints/request", [EnableCors(MyAllowSpecificOrigins)] (GreenPointsContext context) =>
     Results.Ok(context.EditGreenPoints.Include(e => e.Properties).Include(e => e.Collaborator).ToList()))
     .RequireAuthorization(Roles.Editor);
 

@@ -12,9 +12,15 @@ public class GreenPointService
         this.http = http;
     }
 
-    public async Task PostGreenPointRequest(EditGreenPoint editGreenPoint)
+    public async Task<bool> PostGreenPointRequest(EditGreenPoint editGreenPoint)
     {
-        _ = await http.PostAsJsonAsync(Endpoints.PostURLForGreenPointRequest(), editGreenPoint);
+        var resoult = await http.PostAsJsonAsync(Endpoints.PostURLForGreenPointRequest(), editGreenPoint);
+        if (resoult.IsSuccessStatusCode)
+        {
+            EditGreenPoints.Add(editGreenPoint);
+            return true;
+        }
+        return false;
     }
 
     public async Task PostGreenPointAccept(AcceptRequest request)
