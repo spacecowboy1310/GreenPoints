@@ -5,10 +5,10 @@
     public string Password { get; set; }
     public string Mail { get; set; }
     public List<string> Roles { get; set; }
-    public List<GreenPoint> Collaborations { get; set; }
+    public List<int> Collaborations { get; set; }
 }
 
-public class roleRequest
+public class RoleRequest
 {
     public int UserId { get; set; }
     public List<string> NewRoles { get; set; }

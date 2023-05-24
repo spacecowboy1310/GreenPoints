@@ -5,6 +5,7 @@ public class User
     public int Id { get; set; }
     [NotNull]
     public string Username { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
     [NotNull]
     public string Password { get; set; }
     [NotNull]
@@ -18,6 +19,11 @@ public class User
         {
             roles.Add(role.Name);
         }
+        List<int> collaborations = new();
+        foreach (GreenPoint greenPoint in Collaborations ?? new())
+        {
+            collaborations.Add(greenPoint.Id);
+        }
         return new()
         {
             Id = Id,
@@ -25,7 +31,7 @@ public class User
             Password = Password,
             Mail = Mail,
             Roles = roles,
-            Collaborations = Collaborations
+            Collaborations = collaborations
         };
     }
 }
@@ -35,6 +41,7 @@ public class TemporalUser
     public Guid ID { get; set; }
     [NotNull]
     public string Username { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
     [NotNull]
     public string Password { get; set; }
     [NotNull]

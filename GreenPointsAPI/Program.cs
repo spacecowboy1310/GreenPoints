@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Xml.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 const string MyAllowSpecificOrigins = "CorsPolicy";
@@ -103,9 +104,9 @@ app.MapPost("/login", [EnableCors(MyAllowSpecificOrigins)] (UserDTO userModel, G
 
     user.Password = string.Empty;
 
-    UserDTO dto = user.ToDTO();
+    UserWithToken response = new(user.ToDTO(), token);
 
-    return Results.Ok(new UserWithToken(dto, token));
+    return Results.Ok(response);
 });
 
 /// <summary>
@@ -182,9 +183,9 @@ app.MapGet("/confirm/{id}", (Guid id, GreenPointsContext context) =>
 /// Endpoint to update a user's roles based on the request payload.
 /// Administrator authorization is required.
 /// </summary>
-/// <param name="request">Instance of roleRequest class containing user id and a list with all the roles for the user.</param>
+/// <param name="request">Instance of RoleRequest class containing user id and a list with all the roles for the user.</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
+app.MapPost("/changeRole", (RoleRequest request, GreenPointsContext context) =>
 {
     User? user = context.Users.Include(u => u.Roles).FirstOrDefault(u => u.Id == request.UserId);
     if (user is null)
@@ -208,18 +209,20 @@ app.MapPost("/changeRole", (roleRequest request, GreenPointsContext context) =>
 /// </summary>
 /// <param name="editGreenPoint">Instance of EditGreenPoint with the proposed information, if it does not contain the Original parameter Latitude, Longitude and Name are required</param>
 /// <returns>Returns a response with success or failure message.</returns>
-app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsContext context) =>
+app.MapPost("/greenpoints/request", (EditGreenPointDTO editGreenPoint, GreenPointsContext context) =>
 {
     if (editGreenPoint.Original is null && editGreenPoint.Latitude is null || editGreenPoint.Longitude is null || string.IsNullOrEmpty(editGreenPoint.Name.Trim()))
         return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude");
 
-    User? collaborator = context.Users.Find(editGreenPoint.Collaborator.Id);
+    User? collaborator = context.Users.Find(editGreenPoint.Collaborator);
 
     if (collaborator is null)
         return Results.NotFound("User not found");
 
-    editGreenPoint.SetCollaborator(collaborator);
-    context.EditGreenPoints.Add(editGreenPoint);
+    GreenPoint? original = context.GreenPoints.Find(editGreenPoint.Original);
+
+    EditGreenPoint temp = new EditGreenPoint { Latitude = editGreenPoint.Latitude, Longitude = editGreenPoint.Longitude, Name = editGreenPoint.Name, Properties = editGreenPoint.Properties, Collaborator = collaborator, Original = original };
+    context.EditGreenPoints.Add(temp);
     context.SaveChanges();
     return Results.Ok("GreenPoint sent");
 }).RequireAuthorization(Roles.Collaborator);
@@ -232,17 +235,35 @@ app.MapPost("/greenpoints/request", (EditGreenPoint editGreenPoint, GreenPointsC
 /// <returns>Returns a response with success or failure message.</returns>
 app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext context) =>
 {
-    GreenPoint greenPoint;
-    if (request.EditGreenPoint is not null)
+    if (request.GreenPoint is not null)
     {
-        try { greenPoint = request.EditGreenPoint.ToGreenPoint(); }
-        catch { return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude"); }
+        if (string.IsNullOrWhiteSpace(request.GreenPoint.Name))
+            return Results.BadRequest("Info is missing: all requests for new points must have at least a name, latitude and longitude");
 
-        if (request.EditGreenPoint.Original is null)
+        List<User> collaborators = new();
+        foreach (int id in request.GreenPoint.Collaborators)
+        {
+            User? temp = context.Users.Find(id);
+            if (temp is not null)
+                collaborators.Add(temp);
+        }
+        GreenPoint greenPoint = new()
+        {
+            Id = request.GreenPoint.Id,
+            Latitude = request.GreenPoint.Latitude,
+            Longitude = request.GreenPoint.Longitude,
+            Name = request.GreenPoint.Name,
+            Properties = request.GreenPoint.Properties,
+            Collaborators = collaborators
+        };
+
+        if (request.GreenPoint.Id is 0)
+        {
             context.GreenPoints.Add(greenPoint);
+        }
         else
         {
-            GreenPoint? original = context.GreenPoints.Find(request.EditGreenPoint.Original.Id);
+            GreenPoint? original = context.GreenPoints.Find(request.GreenPoint.Id);
             if (original is null)
                 return Results.NotFound("Original point not found");
             // We keep record of every collaborator
@@ -268,22 +289,30 @@ app.MapPost("/greenpoints/accept", (AcceptRequest request, GreenPointsContext co
 /// <param name="lon2">Longitude of the second point.</param>
 /// <returns>Returns the list of greenpoints.</returns>
 app.MapGet("/greenpoints/{lat1}/{lon1}/{lat2}/{lon2}", (double lat1, double lon1, double lat2, double lon2, GreenPointsContext context) =>
-    Results.Ok(context.GreenPoints.Include(g => g.Properties)
+{
+    List<GreenPoint> greenPoints = context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
                                   .Where(g => g.Latitude >= Math.Min(lat1, lat2)
                                            && g.Latitude <= Math.Max(lat1, lat2)
                                            && g.Longitude >= Math.Min(lon1, lon2)
-                                           && g.Longitude <= Math.Max(lon1, lon2)).ToList()));
+                                           && g.Longitude <= Math.Max(lon1, lon2)).ToList();
+    List<GreenPointDTO> response = new();
+    foreach (GreenPoint greenPoint in greenPoints)
+    {
+        response.Add(greenPoint.ToDTO());
+    }
+    return Results.Ok(response);
+});
 
 /// <summary>
 /// Endpoint to retrieve the information of an specific greenpoint
 /// </summary>
 /// <param name="id">The id of the greenpoint.</param>
-/// <returns>An instance of Greenpoint with all its information.</returns>
+/// <returns>An instance of GreenpointDTO with all its information.</returns>
 app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
     Results.Ok(context.GreenPoints.Include(g => g.Properties)
                                   .Include(g => g.Collaborators)
-                                  .FirstOrDefault(g => g.Id == id)));
+                                  .FirstOrDefault(g => g.Id == id)?.ToDTO()));
 
 /// <summary>
 /// Endpoint to retrieve all the greenpoint proposals
@@ -291,7 +320,7 @@ app.MapGet("/greenpoints/{id}", (int id, GreenPointsContext context) =>
 /// </summary>
 /// <returns>The list of EditGreenPoints.</returns>
 app.MapGet("/greenpoints/request", (GreenPointsContext context) =>
-    Results.Ok(context.EditGreenPoints.Include(e => e.Properties).ToList()))
+    Results.Ok(context.EditGreenPoints.Include(e => e.Properties).Include(e => e.Collaborator).ToList()))
     .RequireAuthorization(Roles.Editor);
 
 app.UseCors();

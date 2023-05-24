@@ -3,6 +3,7 @@ using System;
 using GreenPointsAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GreenPointsAPI.Migrations
 {
     [DbContext(typeof(GreenPointsContext))]
-    partial class GreenPointsContextModelSnapshot : ModelSnapshot
+    [Migration("20230523221019_DescriptionProperySimplification")]
+    partial class DescriptionProperySimplification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.4");
@@ -191,19 +194,13 @@ namespace GreenPointsAPI.Migrations
 
             modelBuilder.Entity("DescriptionProperty", b =>
                 {
-                    b.HasOne("EditGreenPoint", "EditGreenPoint")
+                    b.HasOne("EditGreenPoint", null)
                         .WithMany("Properties")
-                        .HasForeignKey("EditGreenPointId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("EditGreenPointId");
 
-                    b.HasOne("GreenPoint", "GreenPoint")
+                    b.HasOne("GreenPoint", null)
                         .WithMany("Properties")
-                        .HasForeignKey("GreenPointId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("EditGreenPoint");
-
-                    b.Navigation("GreenPoint");
+                        .HasForeignKey("GreenPointId");
                 });
 
             modelBuilder.Entity("EditGreenPoint", b =>

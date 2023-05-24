@@ -47,8 +47,8 @@ public class UserService
         _ = await http.GetAsync(Endpoints.GetURLForConfirm(id));
     }
 
-    public async Task GetUserById(roleRequest request)
+    public async Task GetUserById(RoleRequest request)
     {
-        _ = await http.PatchAsJsonAsync<roleRequest>(Endpoints.PostURLForChangeRole(), request);
+        _ = await http.PatchAsJsonAsync<RoleRequest>(Endpoints.PostURLForChangeRole(), request);
     }
 }
