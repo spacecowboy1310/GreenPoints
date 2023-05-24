@@ -2,8 +2,9 @@
 @inject GreenPointService GreenPointService
 @inject UserService UserService
 
-@if(Original == null)
+@if (Original == null)
 {
+    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
     <div class="main">
         <form onsubmit="@CreatePoint">
             <div class="card p-3">
@@ -42,6 +43,8 @@
     </div>
 }
 
+<div id="SetLatLon" @onlatlon="SetLatLon"></div>
+
 @code {
 
     [Parameter]
@@ -50,6 +53,14 @@
     public GreenPoint Original { get; set; }
     private List<DescriptionProperty> extraFieldComponents = new List<DescriptionProperty>();
     private EditGreenPoint editGreenPoint = new EditGreenPoint();
+
+
+    public async Task SetLatLon(LatLonEventArgs eventArgs)
+    {
+        editGreenPoint.Latitude = eventArgs.Lat;
+        editGreenPoint.Longitude = eventArgs.Lng;
+        StateHasChanged();
+    }
 
     private void AddExtraField()
     {
@@ -87,10 +98,12 @@
                     };
                 editGreenPoint.Properties.Add(editDescriptionProperty);
             }
-            
+
         }
-        editGreenPoint.Collaborator = user;
-        bool ok = await GreenPointService.PostGreenPointRequest(editGreenPoint);
+        editGreenPoint.CollaboratorId = user.Id;
+
+        // parse and assign coordinates
+        bool ok = await GreenPointService.PostGreenPointRequest(editGreenPoint, UserService.token);
         if (ok)
         {
             await CloseThis.InvokeAsync();

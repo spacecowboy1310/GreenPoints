@@ -43,6 +43,15 @@
                 };
             }
         });
+
+        Blazor.registerCustomEventType('latlon', {
+            createEventArgs: event => {
+                return {
+                    Lat: event.detail.Lat,
+                    Lng: event.detail.Lng
+                };
+            }
+        });
     </script>
 </body>
 

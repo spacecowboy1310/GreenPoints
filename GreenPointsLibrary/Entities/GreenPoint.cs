@@ -40,7 +40,7 @@ public class EditGreenPoint
     [AllowNull]
     public string Name { get; set; }
     public List<DescriptionProperty> Properties { get; set; }
-    public User Collaborator { get; set; }
+    public int CollaboratorId { get; set; }
     [AllowNull]
     public GreenPoint? Original { get; set; }
 }

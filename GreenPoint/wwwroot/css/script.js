@@ -15,14 +15,15 @@ function initializeMap(token) {
         map.on('click', function (e) {
             var coordinates = e.lngLat;
 
-            document.getElementById('inputLatitud').value = coordinates.lat
-            document.getElementById('inputLongitud').value = coordinates.lng;
+            //document.getElementById('inputLatitud').value = coordinates.lat; 
+            //document.getElementById('inputLongitud').value = coordinates.lng;
+            SetLatLon(coordinates.lat, coordinates.lng);
         });
-        map.on('move', function () {
+        map.on('moveend', function () {
             var bounds = map.getBounds();
             AddAllPoints(bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat, bounds.getSouthEast().lng);
         });
-        map.on('zoom', function () {
+        map.on('zoomend', function () {
             var bounds = map.getBounds();
             AddAllPoints(bounds.getNorthWest().lat, bounds.getNorthWest().lng, bounds.getSouthEast().lat, bounds.getSouthEast().lng);
         });
@@ -65,4 +66,15 @@ function AddAllPoints(lat1, lng1, lat2, lng2) {
         }
     });
     document.getElementById('AddAllPoints').dispatchEvent(event);
+}
+
+function SetLatLon(lat, lng) {
+    const event = new CustomEvent('latlon', {
+        bubbles: true,
+        detail: {
+            Lat: lat,
+            Lng: lng
+        }
+    });
+    document.getElementById('SetLatLon').dispatchEvent(event);
 }

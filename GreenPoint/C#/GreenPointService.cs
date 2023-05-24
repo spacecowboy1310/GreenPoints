@@ -1,10 +1,11 @@
-﻿using System.Net.Http.Json;
+﻿using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace GreenPoints.C_;
 public class GreenPointService
 {
     private readonly HttpClient http;
-    public List<GreenPoint> GreenPoints { get; set; } = new List<GreenPoint>();
+    public List<GreenPointDTO> GreenPoints { get; set; } = new List<GreenPointDTO>();
     public List<EditGreenPoint> EditGreenPoints { get; set; } = new List<EditGreenPoint>();
 
     public GreenPointService(HttpClient http)
@@ -12,8 +13,12 @@ public class GreenPointService
         this.http = http;
     }
 
-    public async Task<bool> PostGreenPointRequest(EditGreenPoint editGreenPoint)
+    public async Task<bool> PostGreenPointRequest(EditGreenPoint editGreenPoint, string token)
     {
+        // Add the key authorization
+
+        http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
         var resoult = await http.PostAsJsonAsync(Endpoints.PostURLForGreenPointRequest(), editGreenPoint);
         if (resoult.IsSuccessStatusCode)
         {
@@ -30,7 +35,7 @@ public class GreenPointService
 
     public async Task GetGreenPointsInArea(double lat1, double lon1, double lat2, double lon2)
     {
-        GreenPoints = await http.GetFromJsonAsync<List<GreenPoint>>(Endpoints.GetURLForGreenPoints(lat1, lon1, lat2, lon2));    
+        GreenPoints = await http.GetFromJsonAsync<List<GreenPointDTO>>(Endpoints.GetURLForGreenPoints(lat1, lon1, lat2, lon2));    
     }
 
     public async Task<GreenPoint> GetGreenPointById(int id)

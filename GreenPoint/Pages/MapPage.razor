@@ -32,9 +32,6 @@
     <button class="session" @onclick="SessionChange">
         <span class="oi @iconSession"></span>
     </button>
-    <button class="change" @onclick="RequestChange">
-        <span class="oi oi-pencil"></span>
-    </button>
     <button class="addMarker" @onclick="AddPointSurvey">
         <span class="oi oi-map-marker"></span>
     </button>
@@ -56,6 +53,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
         var apikey = "pk.eyJ1Ijoic3BhY2UtY293Ym95IiwiYSI6ImNsZW1yM3Z1ZTE4NGkzcW40eGdpdGNuYjcifQ.baBUxOLdUB2i7auVsvDGyQ";
         if (firstRender)
         {
@@ -66,9 +64,10 @@
 
     public async Task AddAllPointsVisible(AreaEventArgs eventArgs)
     {
+        System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
         await JSRuntime.InvokeVoidAsync("removeAllMarkers");
         await GreenPointService.GetGreenPointsInArea(eventArgs.Lat1, eventArgs.Lng1, eventArgs.Lat2, eventArgs.Lng2);
-        foreach (GreenPoint point in GreenPointService.GreenPoints)
+        foreach (GreenPointDTO point in GreenPointService.GreenPoints)
         {
             await JSRuntime.InvokeVoidAsync("addMarker", point.Latitude, point.Longitude);
         }
